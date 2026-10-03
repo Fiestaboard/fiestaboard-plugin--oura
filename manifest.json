@@ -1,0 +1,351 @@
+{
+  "id": "oura",
+  "name": "Oura",
+  "version": "1.0.0",
+  "description": "Show your Oura Ring's daily Sleep, Readiness and Activity scores, last night's sleep and resting heart rate, and today's steps. Signs in to your Oura account through your own free Oura API application.",
+  "author": "FiestaBoard Team",
+  "repository": "https://github.com/Fiestaboard/fiestaboard-plugin--oura",
+  "documentation": "README.md",
+  "icon": "heart-pulse",
+  "category": "data",
+  "fiestaboard_version": ">=9.8.0",
+  "min_refresh_seconds": 300,
+  "oauth": {
+    "provider_name": "Oura",
+    "flows": [
+      "relay"
+    ],
+    "authorization_url": "https://cloud.ouraring.com/oauth/authorize",
+    "token_url": "https://api.ouraring.com/oauth/token",
+    "scopes": [
+      "daily"
+    ],
+    "client_id_setting": "client_id",
+    "client_secret_setting": "client_secret",
+    "app_setup_url": "https://cloud.ouraring.com/oauth/applications"
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "enabled": {
+        "type": "boolean",
+        "title": "Enable Oura",
+        "default": false
+      },
+      "client_id": {
+        "type": "string",
+        "title": "Client ID",
+        "description": "The Client ID of your own Oura API application. Create it at cloud.ouraring.com/oauth/applications, give it the redirect URI shown in Account connection, then copy its Client ID."
+      },
+      "client_secret": {
+        "type": "string",
+        "title": "Client Secret",
+        "description": "The Client Secret of the same Oura API application. It stays on your board and is sent only to Oura.",
+        "ui:widget": "password"
+      },
+      "refresh_seconds": {
+        "type": "integer",
+        "title": "Refresh Interval (seconds)",
+        "description": "How often to ask Oura for new data. Scores change a few times a day, so every 10 minutes is plenty.",
+        "default": 600,
+        "minimum": 300,
+        "maximum": 3600
+      }
+    }
+  },
+  "variables": {
+    "groups": {
+      "scores": {
+        "label": "Daily Scores"
+      },
+      "sleep": {
+        "label": "Last Night's Sleep"
+      },
+      "activity": {
+        "label": "Activity Today"
+      },
+      "body": {
+        "label": "Body"
+      }
+    },
+    "simple": {
+      "sleep_score": {
+        "description": "Latest daily Sleep score, 0-100 (empty until Oura has one)",
+        "type": "number",
+        "max_length": 3,
+        "group": "scores",
+        "example": "82"
+      },
+      "sleep_tile": {
+        "description": "One colour tile for the Sleep score: green 85+, yellow 70-84, red below 70",
+        "type": "string",
+        "max_length": 1,
+        "group": "scores",
+        "example": "{65}"
+      },
+      "sleep_label": {
+        "description": "Oura's band for the Sleep score: OPTIMAL, GOOD or PAY ATTENTION",
+        "type": "string",
+        "max_length": 13,
+        "group": "scores",
+        "example": "GOOD"
+      },
+      "readiness_score": {
+        "description": "Latest daily Readiness score, 0-100 (empty until Oura has one)",
+        "type": "number",
+        "max_length": 3,
+        "group": "scores",
+        "example": "76"
+      },
+      "readiness_tile": {
+        "description": "One colour tile for the Readiness score: green 85+, yellow 70-84, red below 70",
+        "type": "string",
+        "max_length": 1,
+        "group": "scores",
+        "example": "{65}"
+      },
+      "readiness_label": {
+        "description": "Oura's band for the Readiness score: OPTIMAL, GOOD or PAY ATTENTION",
+        "type": "string",
+        "max_length": 13,
+        "group": "scores",
+        "example": "GOOD"
+      },
+      "activity_score": {
+        "description": "Latest daily Activity score, 0-100 (empty until Oura has one)",
+        "type": "number",
+        "max_length": 3,
+        "group": "scores",
+        "example": "91"
+      },
+      "activity_tile": {
+        "description": "One colour tile for the Activity score: green 85+, yellow 70-84, red below 70",
+        "type": "string",
+        "max_length": 1,
+        "group": "scores",
+        "example": "{66}"
+      },
+      "activity_label": {
+        "description": "Oura's band for the Activity score: OPTIMAL, GOOD or PAY ATTENTION",
+        "type": "string",
+        "max_length": 13,
+        "group": "scores",
+        "example": "OPTIMAL"
+      },
+      "scores_line": {
+        "description": "All three scores on one line",
+        "type": "string",
+        "max_length": 20,
+        "group": "scores",
+        "example": "SLP 82 RDY 76 ACT 91"
+      },
+      "total_sleep": {
+        "description": "Total sleep last night",
+        "type": "string",
+        "max_length": 7,
+        "group": "sleep",
+        "example": "7H 32M"
+      },
+      "total_sleep_minutes": {
+        "description": "Total sleep last night in minutes",
+        "type": "number",
+        "max_length": 4,
+        "group": "sleep",
+        "example": "452"
+      },
+      "time_in_bed": {
+        "description": "Time in bed last night",
+        "type": "string",
+        "max_length": 7,
+        "group": "sleep",
+        "example": "8H 5M"
+      },
+      "deep_sleep": {
+        "description": "Deep sleep last night",
+        "type": "string",
+        "max_length": 7,
+        "group": "sleep",
+        "example": "1H 30M"
+      },
+      "rem_sleep": {
+        "description": "REM sleep last night",
+        "type": "string",
+        "max_length": 7,
+        "group": "sleep",
+        "example": "1H 50M"
+      },
+      "sleep_efficiency": {
+        "description": "Sleep efficiency, percent of time in bed asleep",
+        "type": "number",
+        "max_length": 3,
+        "group": "sleep",
+        "example": "93"
+      },
+      "resting_hr": {
+        "description": "Resting heart rate: the lowest heart rate during last night's sleep (bpm)",
+        "type": "number",
+        "max_length": 3,
+        "group": "sleep",
+        "example": "52"
+      },
+      "average_hr": {
+        "description": "Average heart rate during last night's sleep (bpm)",
+        "type": "number",
+        "max_length": 3,
+        "group": "sleep",
+        "example": "58"
+      },
+      "average_hrv": {
+        "description": "Average heart rate variability during last night's sleep (ms)",
+        "type": "number",
+        "max_length": 3,
+        "group": "sleep",
+        "example": "48"
+      },
+      "bedtime": {
+        "description": "When last night's sleep started, 24-hour local time",
+        "type": "string",
+        "max_length": 5,
+        "group": "sleep",
+        "example": "22:48"
+      },
+      "wake_time": {
+        "description": "When last night's sleep ended, 24-hour local time",
+        "type": "string",
+        "max_length": 5,
+        "group": "sleep",
+        "example": "06:53"
+      },
+      "steps": {
+        "description": "Steps today",
+        "type": "number",
+        "max_length": 6,
+        "group": "activity",
+        "example": "8423"
+      },
+      "steps_text": {
+        "description": "Steps today with a thousands separator",
+        "type": "string",
+        "max_length": 7,
+        "group": "activity",
+        "example": "8,423"
+      },
+      "active_calories": {
+        "description": "Active calories burned today",
+        "type": "number",
+        "max_length": 5,
+        "group": "activity",
+        "example": "412"
+      },
+      "total_calories": {
+        "description": "Total calories burned today",
+        "type": "number",
+        "max_length": 5,
+        "group": "activity",
+        "example": "2310"
+      },
+      "temperature_deviation": {
+        "description": "Body temperature deviation from your baseline, in degrees C",
+        "type": "string",
+        "max_length": 4,
+        "group": "body",
+        "example": "+0.2"
+      }
+    }
+  },
+  "teaser": "{65} SLEEP 82",
+  "previews": [
+    {
+      "device_type": "flagship",
+      "rows": [
+        "         OURA",
+        "{65} SLEEP        82",
+        "{65} READINESS    76",
+        "{66} ACTIVITY     91",
+        "SLEPT 7H 32M  RHR 52",
+        "STEPS 8,423"
+      ]
+    },
+    {
+      "device_type": "note",
+      "rows": [
+        "{65} SLEEP 82",
+        "{65} READINESS 76",
+        "{66} ACTIVITY 91"
+      ]
+    },
+    {
+      "label": "Last night",
+      "device_type": "flagship",
+      "rows": [
+        "     LAST NIGHT",
+        "SLEPT 7H 32M",
+        "IN BED 22:48 - 06:53",
+        "RESTING HR 52 BPM",
+        "HRV 48 MS",
+        "TEMP +0.2"
+      ]
+    }
+  ],
+  "demo": {
+    "flagship": {
+      "name": "Oura Demo",
+      "template": [
+        "OURA",
+        "{{oura.sleep_tile}} SLEEP {{oura.sleep_score}}",
+        "{{oura.readiness_tile}} READINESS {{oura.readiness_score}}",
+        "{{oura.activity_tile}} ACTIVITY {{oura.activity_score}}",
+        "SLEPT {{oura.total_sleep}} RHR {{oura.resting_hr}}",
+        "STEPS {{oura.steps_text}}"
+      ],
+      "line_metadata": [
+        {
+          "alignment": "center",
+          "wrap": false
+        },
+        {
+          "alignment": "left",
+          "wrap": false
+        },
+        {
+          "alignment": "left",
+          "wrap": false
+        },
+        {
+          "alignment": "left",
+          "wrap": false
+        },
+        {
+          "alignment": "left",
+          "wrap": false
+        },
+        {
+          "alignment": "left",
+          "wrap": false
+        }
+      ]
+    },
+    "note": {
+      "name": "Oura (Note)",
+      "template": [
+        "{{oura.sleep_tile}} SLEEP {{oura.sleep_score}}",
+        "{{oura.readiness_tile}} READINESS {{oura.readiness_score}}",
+        "{{oura.activity_tile}} ACTIVITY {{oura.activity_score}}"
+      ],
+      "line_metadata": [
+        {
+          "alignment": "left",
+          "wrap": false
+        },
+        {
+          "alignment": "left",
+          "wrap": false
+        },
+        {
+          "alignment": "left",
+          "wrap": false
+        }
+      ]
+    }
+  }
+}
