@@ -152,13 +152,17 @@ def pick_latest(docs: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
 
 
 def pick_main_sleep(periods: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-    """Last night's main sleep: newest day, a long sleep first, then the longest."""
+    """Last night's main sleep: the newest long sleep, else the newest, longest nap.
+
+    A long sleep wins over a newer nap: an evening ``late_nap`` is filed under
+    the next day, so sorting by day first would show it as "last night".
+    """
     counted = [p for p in periods if p.get("type") in COUNTED_SLEEP_TYPES]
     if not counted:
         return None
     return max(
         counted,
-        key=lambda p: (p.get("day") or "", p.get("type") == "long_sleep", p.get("total_sleep_duration") or 0),
+        key=lambda p: (p.get("type") == "long_sleep", p.get("day") or "", p.get("total_sleep_duration") or 0),
     )
 
 

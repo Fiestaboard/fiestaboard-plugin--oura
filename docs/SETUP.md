@@ -4,7 +4,11 @@ Connect your Oura account to show your daily scores and last night's sleep on yo
 
 ## Overview
 
-The Oura plugin shows your daily Sleep, Readiness and Activity scores, last night's sleep and resting heart rate, and today's steps.
+**What it does:**
+
+- Shows your daily Sleep, Readiness and Activity scores, each with a colour tile in Oura's bands
+- Shows last night's sleep: total, stages, resting heart rate, HRV, bedtime and wake time
+- Shows today's steps and calories, and your body temperature deviation
 
 **Prerequisites:**
 

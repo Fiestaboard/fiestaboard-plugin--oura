@@ -124,6 +124,14 @@ class TestHelpers:
         assert pick_main_sleep([nap]) is nap
         assert pick_main_sleep([rejected]) is None
 
+    def test_pick_main_sleep_ignores_evening_late_nap(self):
+        # A late_nap ends after 6 pm and is filed under the next day, so it
+        # is the newest period, but last night's long sleep is still the one.
+        main = sleep_period(TODAY, kind="long_sleep", total=25000)
+        late_nap = sleep_period("2026-10-03", kind="late_nap", total=1800)
+        assert pick_main_sleep([main, late_nap]) is main
+        assert pick_main_sleep([late_nap]) is late_nap
+
 
 # ----------------------------------------------------------------------
 # Variables
