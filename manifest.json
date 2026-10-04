@@ -347,5 +347,13 @@
         }
       ]
     }
-  }
+  },
+  "screenshots": [
+    {
+      "src": "docs/board-display.png",
+      "alt": "Oura on a FiestaBoard",
+      "caption": "The default template",
+      "primary": true
+    }
+  ]
 }
